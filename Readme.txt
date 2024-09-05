@@ -2,7 +2,6 @@
 
 1.1) Baixe o pacote (ILOGCPLEX_Ubuntu64.bin) do ILOG CPLEX no link do drive, na pasta ILOG CPLEX:
 
-https://drive.google.com/drive/folders/15IpTiF5wy7uTT6cPGZnlNtJ2\_QEGL1oN?usp=sharing
 
 1.2) Após baixar, abra o terminal, entre como "sudo", comando e sua senha do linux: 
 sudo su
