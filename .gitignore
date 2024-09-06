@@ -2,3 +2,5 @@
 _Pesquisa_Operacional__Trabalho.pdf
 ./vscode
 *.bin
+*.exe
+*.o
