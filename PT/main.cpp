@@ -42,13 +42,6 @@ void cplex(){ //CPLEX
 	IloModel model (env);
 	IloExpr sum(env); /// Expression for Sum
 
-	// for(int i=0;i<DEST;i++){
-	
-	// 	for(int j=0; j<ORI; j++){
-			
-	// 		printf("Custo %d\n", Custo[i][j]);
-	// 	}
-	// }
 
 	//FUNCAO OBJETIVO ---------------------------------------------
 	sum.clear();
@@ -58,8 +51,10 @@ void cplex(){ //CPLEX
 		}
 	}
 	model.add(IloMinimize(env, sum)); //Minimizacao
+	
 	//RESTRICOES ---------------------------------------------	
-	//R1 - Respeito da capacidade de Mochila
+	
+	//R1 - Atender Demanda
 	for(int i = 0; i < DEST; i++){
 		sum.clear();
 		for(int j = 0; j < ORI; j++){
@@ -69,6 +64,7 @@ void cplex(){ //CPLEX
 		numberRes++;			
 	}
 
+	//R2 - Respeitar Oferta
 	for(int i = 0; i < ORI; i++){
 		sum.clear();
 		for(int j = 0; j < DEST; j++){
