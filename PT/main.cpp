@@ -9,8 +9,8 @@ ILOSTLBEGIN //MACRO - "using namespace" for ILOCPEX
 //CPLEX Parameters
 #define CPLEX_TIME_LIM 3600 //3600 segundos
 
-int QTO; //Quantidade de Origens
-int QTD; //Quantidade de destino
+int ORI; //Quantidade de Origens
+int DEST; //Quantidade de destino
 
 vector<int> Origem; //Conjunto de origens
 vector<int> Destino;
@@ -30,9 +30,9 @@ void cplex(){ //CPLEX
 	//Definicao - Variaveis de Decisao 2 dimensoes (x_ij) não binárias (discretas)
 	IloArray<IloNumVarArray> x(env);
 
-	for( int i = 0; i < QTD; i++){
+	for(int i = 0; i < DEST; i++){
 		x.add(IloNumVarArray(env));
-		for( int j = 0; j < QTO; j++){
+		for( int j = 0; j < ORI; j++){
 			x[i].add(IloIntVar(env, 0, CPXINT_MAX));
 			numberVar++;
 		}
@@ -42,42 +42,38 @@ void cplex(){ //CPLEX
 	IloModel model (env);
 	IloExpr sum(env); /// Expression for Sum
 
+	// for(int i=0;i<DEST;i++){
+	
+	// 	for(int j=0; j<ORI; j++){
+			
+	// 		printf("Custo %d\n", Custo[i][j]);
+	// 	}
+	// }
 
 	//FUNCAO OBJETIVO ---------------------------------------------
 	sum.clear();
-	for(int i = 0; i < QTD; i++ ){
-		for (int j=0; j < QTO; j++){
-			if(Custo[i][j] == 0 || i==j) continue;
-
-			sum += (Custo[i][j]*x[i][j]);
+	for(int i=0; i < DEST; i++ ){
+		for (int j=0; j < ORI; j++){
+			sum += (Custo[i][j]*x[i][j]);	
 		}
 	}
 	model.add(IloMinimize(env, sum)); //Minimizacao
-
 	//RESTRICOES ---------------------------------------------	
-	 
 	//R1 - Respeito da capacidade de Mochila
-	for(int j = 0; j < QTO; j++ ){
+	for(int i = 0; i < DEST; i++){
 		sum.clear();
-		for(int i=0; i < QTD; i++){
-			if (!Custo[j][i]) {continue;}
-			sum += (x[j][i]);
-
+		for(int j = 0; j < ORI; j++){
+			sum += x[i][j];
 		}
-		
-		model.add(sum == Destino[j]); 
+		model.add(sum == Destino[i]); 
 		numberRes++;			
 	}
 
-	for(int i = 0; i < QTO; i++){
+	for(int i = 0; i < ORI; i++){
 		sum.clear();
-		
-		for(int j=0; j < QTD; j++){
-			if(!Custo[j][i]) {continue;}
-			
-			sum += (x[j][i]);
+		for(int j = 0; j < DEST; j++){
+			sum += x[j][i];	
 		}
-
 		model.add(sum <= Origem[i]); 
 		numberRes++; 
 	}
@@ -152,10 +148,10 @@ void cplex(){ //CPLEX
 		
 		cout << "Variaveis de decisao: " << endl;
 		
-		for(int i = 0; i < QTO; i++){
-			for(int j=0; j < QTD; j++){
+		for(int i = 0; i < DEST; i++){
+			for(int j=0; j < ORI; j++){
 				value = IloRound(cplex.getValue(x[i][j]));
-				printf("x[%d %d]: %.0lf\n", i+1, j+1, value);
+				printf("x[%d][%d]: %.0lf\n", i+1, j+1, value);
 			}
 			
 		}
@@ -179,39 +175,41 @@ void cplex(){ //CPLEX
 
 int main(){
 
-	cin >> QTD >> QTO;
+	cin >> ORI >> DEST;
 	
-	Origem.resize(QTD); //Resize destination vector
-	Destino.resize(QTO); //Resize origin vector
+	Origem.resize(ORI); //Resize destination vector
+	Destino.resize(DEST); //Resize origin vector
+	Custo.resize(DEST); //Resize matrix
 	
-	Custo.resize(QTD); //Resize matrix
-	
-	for(int i=0; i<QTD; i++){
-		cin >> Destino[i];
-	}
-	
-	for(int i=0; i<QTO; i++){
+	for(int i=0; i<ORI; i++){
 		cin >> Origem[i];
 	}
-
-	for(int i=0;i<QTD;i++){
-		Custo[i].assign(QTO,0);
-		
-		for(int j=0; j<QTO; j++)
-		cin >> Custo[i][j];
+	
+	for(int i=0; i<DEST; i++){
+		cin >> Destino[i];
 	}
 
+	// for(int i=0; i<DEST; i++){
+	// 	printf("Destino %d\n", Destino[i]);
+	// }
+	// for(int i=0; i<ORI; i++){
+	// 	printf("Origem %d\n", Origem[i]);
+	// }
+
+	for(int i = 0; i < DEST; i++){
+		Custo[i].resize(ORI);
+		for(int j = 0; j < ORI; j++){
+			cin >> Custo[i][j];
+		}
+
+	}
+
+	printf("Quantidade de Origens: %d\n", ORI);
 	printf("Verificacao da leitura dos dados:\n");
-	printf("Quantidade de Origens: %d\n", QTO);
-	printf("Quantidade de Destinos: %d\n", QTD);
+	printf("Quantidade de Destinos: %d\n", DEST);
 	printf("Custos:\n");
 
-	// for(int i=0;i<QTD;i++){
-	// 	printf("Custo de %d\n ",i);
-	// 	for(int j=0; j<QTO; j++){
-	// 		printf("para %d",j);
-	// 		printf("= %d\n" ,Custo[i][j]);
-	// 	}
+
 
 	cplex();
 
