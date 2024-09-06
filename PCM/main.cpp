@@ -9,12 +9,10 @@ ILOSTLBEGIN //MACRO - "using namespace" for ILOCPEX
 //CPLEX Parameters
 #define CPLEX_TIME_LIM 3600 //3600 segundos
 
-int ORI; //Quantidade de Origens
-int DEST; //Quantidade de destino
+int n_linha; //Quantidade de vertices
+int n_colun;
 
-vector<int> Origem; //Conjunto de origens
-vector<int> Destino;
-vector<vector<int>> Custo;
+vector<vector<int>> Grafo;
 
 void cplex(){ //CPLEX
     
@@ -30,10 +28,10 @@ void cplex(){ //CPLEX
 	//Definicao - Variaveis de Decisao 2 dimensoes (x_ij) não binárias (discretas)
 	IloArray<IloNumVarArray> x(env);
 
-	for(int i = 0; i < DEST; i++){
+	for(int i = 0; i < n_linha; i++){
 		x.add(IloNumVarArray(env));
-		for( int j = 0; j < ORI; j++){
-			x[i].add(IloIntVar(env, 0, CPXINT_MAX));
+		for( int j = 0; j < n_colun; j++){
+			x[i].add(IloIntVar(env, 0, 1));
 			numberVar++;
 		}
 	}
@@ -41,37 +39,58 @@ void cplex(){ //CPLEX
 	//Definicao do ambiente modelo ------------------------------------------
 	IloModel model (env);
 	IloExpr sum(env); /// Expression for Sum
-
+	IloExpr sum2(env);
 
 	//FUNCAO OBJETIVO ---------------------------------------------
 	sum.clear();
-	for(int i=0; i < DEST; i++ ){
-		for (int j=0; j < ORI; j++){
-			sum += (Custo[i][j]*x[i][j]);	
+	for(int i=0; i < n_linha; i++ ){
+		for (int j=0; j < n_colun; j++){
+			if(i==j || Grafo[i][j] == 0){
+				continue;
+			}
+			//printf("custo[%c][%c] = %d\n", 65+i, 65+j, Grafo[i][j]);
+			sum += Grafo[i][j]*x[i][j];	
 		}
 	}
 	model.add(IloMinimize(env, sum)); //Minimizacao
 	
 	//RESTRICOES ---------------------------------------------	
 	
-	//R1 - Atender Demanda
-	for(int i = 0; i < DEST; i++){
+	for(int i = 0; i < n_linha; i++){
+		printf("\ni:%d\n",i);
 		sum.clear();
-		for(int j = 0; j < ORI; j++){
-			sum += x[i][j];
-		}
-		model.add(sum == Destino[i]); 
-		numberRes++;			
-	}
+		for(int j = 0; j < n_colun; j++){
+			if(i==j) continue;
 
-	//R2 - Respeitar Oferta
-	for(int i = 0; i < ORI; i++){
-		sum.clear();
-		for(int j = 0; j < DEST; j++){
-			sum += x[j][i];	
+			if(Grafo[i][j]!=0){
+				printf("+[%d][%d] ", i,j);
+				sum += x[i][j];
+			}
+			// if(Grafo[j][i]!=0){
+			// 	printf("-[%d][%d] ", j,i);
+			// 	sum-= x[j][i];
+			// }
 		}
-		model.add(sum <= Origem[i]); 
-		numberRes++; 
+
+		sum2.clear();
+		for (int k = 0; k < n_colun; k++){
+			if(Grafo[k][i] == 0){
+				continue;
+			}
+			// printf("custo[%c][%c] = %d\n", 65+k, 65+i, Grafo[k][i]);
+			sum2 += x[k][i];
+		}
+
+		if(i==0){
+			// printf("0");
+			model.add(sum -sum2 == 1);
+		}else if(i==n_linha-1){
+			// printf("6");
+			model.add(sum -sum2== -1);
+		}else{
+			// printf("outro");
+			model.add(sum -sum2== 0);
+		}
 	}
 
 	//------ EXECUCAO do MODELO ----------
@@ -144,10 +163,11 @@ void cplex(){ //CPLEX
 		
 		cout << "Variaveis de decisao: " << endl;
 		
-		for(int i = 0; i < DEST; i++){
-			for(int j=0; j < ORI; j++){
+		for(int i = 0; i < n_linha; i++){
+			for(int j=0; j < n_colun; j++){
+				if(Grafo[i][j]==0)continue;
 				value = IloRound(cplex.getValue(x[i][j]));
-				printf("x[%d][%d]: %.0lf\n", i+1, j+1, value);
+				printf("x[%c][%c]: %.0lf\n", 65+i, 65+j, value);
 			}
 			
 		}
@@ -163,7 +183,7 @@ void cplex(){ //CPLEX
 	//Free Memory
 	cplex.end();
 	sum.end();
-	
+	sum2.end();
 
 	cout << "Memory usage before end:  " << env.getMemoryUsage() / (1024. * 1024.) << " MB" << endl;
 	env.end();
@@ -171,43 +191,20 @@ void cplex(){ //CPLEX
 
 int main(){
 
-	cin >> ORI >> DEST;
+	cin >> n_linha >> n_colun;
+	Grafo.resize(n_linha); //Resize matrix
 	
-	Origem.resize(ORI); //Resize destination vector
-	Destino.resize(DEST); //Resize origin vector
-	Custo.resize(DEST); //Resize matrix
-	
-	for(int i=0; i<ORI; i++){
-		cin >> Origem[i];
-	}
-	
-	for(int i=0; i<DEST; i++){
-		cin >> Destino[i];
-	}
-
-	// for(int i=0; i<DEST; i++){
-	// 	printf("Destino %d\n", Destino[i]);
-	// }
-	// for(int i=0; i<ORI; i++){
-	// 	printf("Origem %d\n", Origem[i]);
-	// }
-
-	for(int i = 0; i < DEST; i++){
-		Custo[i].resize(ORI);
-		for(int j = 0; j < ORI; j++){
-			cin >> Custo[i][j];
-			printf("custo[%d][%d] = %d\n", i, j, Custo[i][j]);
+	for(int i = 0; i < n_linha; i++){
+		Grafo[i].assign(n_colun,0);
+		for(int j = 0; j < n_colun; j++){
+			cin >> Grafo[i][j];
+			//printf("custo[%c][%c] = %d\n", 65+i, 65+j, Grafo[i][j]);
 		}
 
 	}
-
-	printf("Quantidade de Origens: %d\n", ORI);
 	printf("Verificacao da leitura dos dados:\n");
-	printf("Quantidade de Destinos: %d\n", DEST);
-	printf("Custos:\n");
-
-
-
+	printf("Tamanho da matriz: %d x %d\n", n_colun, n_linha);
+	
 	cplex();
 
     return 0;
