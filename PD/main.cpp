@@ -9,12 +9,12 @@ ILOSTLBEGIN //MACRO - "using namespace" for ILOCPEX
 //CPLEX Parameters
 #define CPLEX_TIME_LIM 3600 //3600 segundos
 
-int ORI; //Quantidade de Origens
-int DEST; //Quantidade de destino
+int n_pessoas; //Quantidade de Pessas
+int n_tarefas; //Quantidade de Tarefas
 
-vector<int> Origem; //Conjunto de origens
-vector<int> Destino;
-vector<vector<int>> Custo;
+vector<int> Pessoas; //Conjunto de pessas
+vector<int> Tarefas; //Conjunto de Tarefas
+vector<vector<int>> Custo; // Custo de cada tarefas
 
 void cplex(){ //CPLEX
     
@@ -30,9 +30,9 @@ void cplex(){ //CPLEX
 	//Definicao - Variaveis de Decisao 2 dimensoes (x_ij) não binárias (discretas)
 	IloArray<IloNumVarArray> x(env);
 
-	for(int i = 0; i < DEST; i++){
+	for(int i = 0; i < n_tarefas; i++){
 		x.add(IloNumVarArray(env));
-		for( int j = 0; j < ORI; j++){
+		for( int j = 0; j < n_pessoas; j++){
 			x[i].add(IloIntVar(env, 0, CPXINT_MAX));
 			numberVar++;
 		}
@@ -45,32 +45,33 @@ void cplex(){ //CPLEX
 
 	//FUNCAO OBJETIVO ---------------------------------------------
 	sum.clear();
-	for(int i=0; i < DEST; i++ ){
-		for (int j=0; j < ORI; j++){
+	for(int i=0; i < n_tarefas; i++){
+		for (int j=0; j < n_pessoas; j++){
 			sum += (Custo[i][j]*x[i][j]);	
+
 		}
 	}
 	model.add(IloMinimize(env, sum)); //Minimizacao
 	
 	//RESTRICOES ---------------------------------------------	
 	
-	//R1 - Atender Demanda
-	for(int i = 0; i < DEST; i++){
+	//R1 - Tarefas Designadas
+	for(int i = 0; i < n_tarefas; i++){
 		sum.clear();
-		for(int j = 0; j < ORI; j++){
-			sum += x[i][j];
+		for(int j = 0; j < n_pessoas; j++){
+			sum += x[j][i];
 		}
-		model.add(sum == Destino[i]); 
+		model.add(sum == 1); 
 		numberRes++;			
 	}
 
-	//R2 - Respeitar Oferta
-	for(int i = 0; i < ORI; i++){
+	//R2 - Pessoas Designadas
+	for(int i = 0; i < n_tarefas; i++){
 		sum.clear();
-		for(int j = 0; j < DEST; j++){
-			sum += x[j][i];	
+		for(int j = 0; j < n_pessoas; j++){
+			sum += x[i][j];	
 		}
-		model.add(sum <= Origem[i]); 
+		model.add(sum == 1); 
 		numberRes++; 
 	}
 
@@ -144,10 +145,10 @@ void cplex(){ //CPLEX
 		
 		cout << "Variaveis de decisao: " << endl;
 		
-		for(int i = 0; i < DEST; i++){
-			for(int j=0; j < ORI; j++){
+		for(int i = 0; i < n_tarefas; i++){
+			for(int j=0; j < n_pessoas; j++){
 				value = IloRound(cplex.getValue(x[i][j]));
-				printf("x[%d][%d]: %.0lf\n", i+1, j+1, value);
+				printf("x[%d][%c]: %.0lf\n", i+1, 65+j, value);
 			}
 			
 		}
@@ -171,42 +172,47 @@ void cplex(){ //CPLEX
 
 int main(){
 
-	cin >> ORI >> DEST;
+	cin >> n_pessoas >> n_tarefas;
 	
-	Origem.resize(ORI); //Resize destination vector
-	Destino.resize(DEST); //Resize origin vector
-	Custo.resize(DEST); //Resize matrix
+	Pessoas.resize(n_pessoas); //Resize destination vector
+	Tarefas.resize(n_tarefas); //Resize origin vector
 	
-	for(int i=0; i<ORI; i++){
-		cin >> Origem[i];
-	}
+	Custo.resize(n_pessoas); //Resize matrix
 	
-	for(int i=0; i<DEST; i++){
-		cin >> Destino[i];
-	}
-
-	// for(int i=0; i<DEST; i++){
-	// 	printf("Destino %d\n", Destino[i]);
+	// for(int i=0; i<n_pessoas; i++){
+	// 	cin >> Pessoas[i];
 	// }
-	// for(int i=0; i<ORI; i++){
-	// 	printf("Origem %d\n", Origem[i]);
+	
+	// for(int i=0; i<n_tarefas; i++){
+	// 	cin >> Tarefas[i];
 	// }
 
-	for(int i = 0; i < DEST; i++){
-		Custo[i].resize(ORI);
-		for(int j = 0; j < ORI; j++){
+	// for(int i=0; i<n_pessoas; i++){
+	// 	printf("Pessoas %d\n", Pessoas[i]);
+	// }
+	// for(int i=0; i<n_tarefas; i++){
+	// 	printf("Tarefas %d\n", Tarefas[i]);
+	// }
+
+	for(int i = 0; i < n_pessoas; i++){
+		Custo[i].resize(n_tarefas);
+		for(int j = 0; j < n_tarefas; j++){
 			cin >> Custo[i][j];
-			printf("custo[%d][%d] = %d\n", i, j, Custo[i][j]);
 		}
 
 	}
 
-	printf("Quantidade de Origens: %d\n", ORI);
 	printf("Verificacao da leitura dos dados:\n");
-	printf("Quantidade de Destinos: %d\n", DEST);
+	printf("Quantidade de Pessoas: %d\n", n_pessoas);
+	printf("Quantidade de Tarefas: %d\n", n_tarefas);
+	
 	printf("Custos:\n");
-
-
+	
+	// for(int i = 0; i < n_pessoas; i++){
+	// 	for(int j = 0; j < n_tarefas; j++){
+	// 		printf("custo[%d][%d] = %d\n", i, j, Custo[i][j]);
+	// 	}
+	// }
 
 	cplex();
 
