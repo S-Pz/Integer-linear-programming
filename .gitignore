@@ -1,6 +1,9 @@
 #file
 _Pesquisa_Operacional__Trabalho.pdf
-./vscode
+#Directory
+.vscode/
+
+#File extention
 *.bin
 *.exe
 *.o
