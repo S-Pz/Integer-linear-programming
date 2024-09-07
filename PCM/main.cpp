@@ -82,14 +82,11 @@ void cplex(){ //CPLEX
 		}
 
 		if(i==0){
-			// printf("0");
-			model.add(sum -sum2 == 1);
-		}else if(i==n_linha-1){
-			// printf("6");
-			model.add(sum -sum2== -1);
+			model.add(sum - sum2 == 1);
+		}else if(i == n_linha-1){
+			model.add(sum - sum2 == -1);
 		}else{
-			// printf("outro");
-			model.add(sum -sum2== 0);
+			model.add(sum - sum2 == 0);
 		}
 	}
 

@@ -31,7 +31,7 @@ void cplex(){ //CPLEX
 	for(int i = 0; i < n_linha; i++){
 		x.add(IloNumVarArray(env));
 		for( int j = 0; j < n_colun; j++){
-			x[i].add(IloIntVar(env, 0, 1));
+			x[i].add(IloIntVar(env, 0, CPXINT_MAX));
 			numberVar++;
 		}
 	}
@@ -43,57 +43,88 @@ void cplex(){ //CPLEX
 
 	//FUNCAO OBJETIVO ---------------------------------------------
 	sum.clear();
-	for(int s=0; s < n_linha; s++ ){
-		for (int j=0; j < n_colun; j++){
-			if(s==j || Grafo[s][j] == 0){
-				continue;
-			}
-			printf("custo[%c][%c] = %d\n", 65+s, 65+j, Grafo[s][j]);
-			sum += Grafo[s][j]*x[s][j];	
+	for(int s = 0; s < n_linha; s++){
+		// for(int j = 0; j < n_colun; j++){
+		// 	if(Grafo[s][j] != 0){
+		// 		sum += x[s][j];		
+		// 	}
+		// }
+		
+		if(Grafo[0][s] != 0){
+			sum += x[0][s];		
 		}
+		
 	}
 	model.add(IloMaximize(env, sum)); //Minimizacao
 	
 	//RESTRICOES ---------------------------------------------	
 	
-	//R1 Conservação de fluxo
+	//R2
+	// sum.clear();
+	// for(int s=0;s < n_colun; s++){
+	// 	if(Grafo[0][s] != 0){
+	// 		sum += x[0][s];
+	// 	}
+	// }
+	
+	// sum2.clear();
+	
+	// for(int i=0; i < n_colun; i++){
+	// 	if(Grafo[i][n_colun-1] != 0){
+	// 		sum2 += x[i][n_colun-1];
+	// 	}
+	// }
+	// model.add(sum - sum2==0);
+	// numberRes++;
+
+	//R3 Conservação de fluxo intermediários
 	for(int i = 0; i < n_linha; i++){
 		
-		if(i!=0 && i!= n_linha-1){
-
-			sum.clear();
-			for(int j = 0; j < n_colun; j++){
-				if(i==j) continue;
-
-				if(Grafo[i][j]!=0){
-					sum += x[i][j];
-				}
-			}
-			sum2.clear();
-			for (int k = 0; k < n_colun; k++){
-				if(i==k) continue;
-
-				if(Grafo[k][i] != 0){
-					sum2 += x[k][i];
-				}
-				// printf("custo[%c][%c] = %d\n", 65+k, 65+i, Grafo[k][i]);
-			}
-			model.add(sum - sum2 == 0); 
-			numberRes++;
+		if(i==0 || i==n_linha-1){
+			continue;
 		}
+		
+		sum.clear();
+		//Somatório de tudo que sai do vétice i
+		for(int j = 0; j < n_colun; j++){
+			
+			if(Grafo[i][j] != 0){
+				//printf("+x[%c][%c] = %d\n",64+i, 65+j,Grafo[i][j]);
+				sum += x[i][j];
+			}
+		}
+
+		sum2.clear();
+		//somatório de tudo que chega
+		for(int k = 0; k < n_colun; k++){
+			printf("i = %d\n",i);
+			if(Grafo[k][i] !=0 ){
+				printf("-x[%c][%c] = %d\n",64+i, 65+k,Grafo[k][i]);
+				sum2 += x[k][i];
+			}
+		}
+		model.add(sum == sum2); 
+		numberRes++;
 	}
 
-	//R2 Capacidade Máxima
-	for (int i=0; i<n_linha;i++) {
-		for (int j=0; j<n_colun; j++) {
-			if(!Grafo[i][j]){
+	//R4 Capacidade Máxima
+	for(int i = 0; i < n_linha; i++) {
+		for(int j = 0; j < n_colun; j++) {
+			if(Grafo[i][j]!=0){
+				// if(i==0){
+				// 	int a=j-1;
+				// 	printf("x[%c][%c] <= %d\n",83, 65+a,Grafo[i][j]);
+				// }
+				// else{
+				// 	printf("custo[%c][%c] <= %d\n", 64+i, 64+j, Grafo[i][j]);
+				// }
+				
 				model.add(x[i][j] <= Grafo[i][j]);
 				numberRes++;
 			}
 		}
 	}
-	//Adicionar a outra restrição 2 do slide
-
+	
 	//------ EXECUCAO do MODELO ----------
 	time_t timer, timer2;
 	IloNum value, objValue;
@@ -199,10 +230,17 @@ int main(){
 		Grafo[i].assign(n_colun,0);
 		for(int j = 0; j < n_colun; j++){
 			cin >> Grafo[i][j];
-			//printf("custo[%c][%c] = %d\n", 65+i, 65+j, Grafo[i][j]);
 			
+			// if(i==0){
+			// 	int a=j-1;
+			// 	printf("x[%c][%c] = %d\n",83, 65+a,Grafo[i][j]);
+			// }else if(i==6){
+			// 	printf("custo[%c][%c] = %d\n", 84, 64+j, Grafo[i][j]);
+			// }
+			// else{
+			// 	printf("custo[%c][%c] = %d\n", 64+i, 64+j, Grafo[i][j]);
+			// }
 		}
-
 	}
 	printf("Verificacao da leitura dos dados:\n");
 	printf("Tamanho da matriz: %d x %d\n", n_colun, n_linha);
