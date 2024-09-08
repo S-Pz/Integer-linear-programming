@@ -1,4 +1,11 @@
 
+/*---------------- File: main.cpp  ---------------------+
+|Problema do Transporte (PT)                            |
+|					      		                        |
+|					      		                        |
+| Implementado por: Pedro Garcia, Sávio Francisco       |
++-------------------------------------------------------+ */
+
 #include <bits/stdc++.h>
 #include <cstdio>
 #include <ilcplex/ilocplex.h>
@@ -185,13 +192,6 @@ int main(){
 		cin >> Destino[i];
 	}
 
-	// for(int i=0; i<DEST; i++){
-	// 	printf("Destino %d\n", Destino[i]);
-	// }
-	// for(int i=0; i<ORI; i++){
-	// 	printf("Origem %d\n", Origem[i]);
-	// }
-
 	for(int i = 0; i < DEST; i++){
 		Custo[i].resize(ORI);
 		for(int j = 0; j < ORI; j++){
@@ -201,11 +201,9 @@ int main(){
 
 	}
 
-	printf("Quantidade de Origens: %d\n", ORI);
 	printf("Verificacao da leitura dos dados:\n");
+	printf("Quantidade de Origens: %d\n", ORI);
 	printf("Quantidade de Destinos: %d\n", DEST);
-	printf("Custos:\n");
-
 
 
 	cplex();

@@ -1,4 +1,11 @@
 
+/*---------------- File: main.cpp  ---------------------+
+|Problema de Fluxo Máximo (PFM)                         |
+|					      		                        |
+|					      		                        |
+| Implementado por: Pedro Garcia, Sávio Francisco       |
++-------------------------------------------------------+ */
+
 #include <bits/stdc++.h>
 #include <cstdio>
 #include <ilcplex/ilocplex.h>
@@ -25,7 +32,6 @@ void cplex(){ //CPLEX
 
 	//---------- MODELAGEM ---------------
 
-	//Definicao - Variaveis de Decisao 2 dimensoes (x_ij) não binárias (discretas)
 	IloArray<IloNumVarArray> x(env);
 
 	for(int i = 0; i < n_linha; i++){
@@ -44,40 +50,16 @@ void cplex(){ //CPLEX
 	//FUNCAO OBJETIVO ---------------------------------------------
 	sum.clear();
 	for(int s = 0; s < n_linha; s++){
-		// for(int j = 0; j < n_colun; j++){
-		// 	if(Grafo[s][j] != 0){
-		// 		sum += x[s][j];		
-		// 	}
-		// }
 		
 		if(Grafo[0][s] != 0){
 			sum += x[0][s];		
 		}
-		
 	}
 	model.add(IloMaximize(env, sum)); //Minimizacao
 	
 	//RESTRICOES ---------------------------------------------	
 	
-	//R2
-	// sum.clear();
-	// for(int s=0;s < n_colun; s++){
-	// 	if(Grafo[0][s] != 0){
-	// 		sum += x[0][s];
-	// 	}
-	// }
-	
-	// sum2.clear();
-	
-	// for(int i=0; i < n_colun; i++){
-	// 	if(Grafo[i][n_colun-1] != 0){
-	// 		sum2 += x[i][n_colun-1];
-	// 	}
-	// }
-	// model.add(sum - sum2==0);
-	// numberRes++;
-
-	//R3 Conservação de fluxo intermediários
+	//R3 Conservação de fluxo 
 	for(int i = 0; i < n_linha; i++){
 		
 		if(i==0 || i==n_linha-1){
@@ -97,9 +79,9 @@ void cplex(){ //CPLEX
 		sum2.clear();
 		//somatório de tudo que chega
 		for(int k = 0; k < n_colun; k++){
-			printf("i = %d\n",i);
+			//printf("i = %d\n",i);
 			if(Grafo[k][i] !=0 ){
-				printf("-x[%c][%c] = %d\n",64+i, 65+k,Grafo[k][i]);
+				//printf("-x[%c][%c] = %d\n",64+i, 65+k,Grafo[k][i]);
 				sum2 += x[k][i];
 			}
 		}
@@ -110,15 +92,7 @@ void cplex(){ //CPLEX
 	//R4 Capacidade Máxima
 	for(int i = 0; i < n_linha; i++) {
 		for(int j = 0; j < n_colun; j++) {
-			if(Grafo[i][j]!=0){
-				// if(i==0){
-				// 	int a=j-1;
-				// 	printf("x[%c][%c] <= %d\n",83, 65+a,Grafo[i][j]);
-				// }
-				// else{
-				// 	printf("custo[%c][%c] <= %d\n", 64+i, 64+j, Grafo[i][j]);
-				// }
-				
+			if(Grafo[i][j]!=0){	
 				model.add(x[i][j] <= Grafo[i][j]);
 				numberRes++;
 			}
@@ -230,18 +204,9 @@ int main(){
 		Grafo[i].assign(n_colun,0);
 		for(int j = 0; j < n_colun; j++){
 			cin >> Grafo[i][j];
-			
-			// if(i==0){
-			// 	int a=j-1;
-			// 	printf("x[%c][%c] = %d\n",83, 65+a,Grafo[i][j]);
-			// }else if(i==6){
-			// 	printf("custo[%c][%c] = %d\n", 84, 64+j, Grafo[i][j]);
-			// }
-			// else{
-			// 	printf("custo[%c][%c] = %d\n", 64+i, 64+j, Grafo[i][j]);
-			// }
 		}
 	}
+
 	printf("Verificacao da leitura dos dados:\n");
 	printf("Tamanho da matriz: %d x %d\n", n_colun, n_linha);
 	

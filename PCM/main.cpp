@@ -1,3 +1,9 @@
+/*---------------- File: main.cpp  ---------------------+
+|Problema do Caminho Mínimo (PCM)                       |
+|					      		                        |
+|					      		                        |
+| Implementado por: Pedro Garcia, Sávio Francisco       |
++-------------------------------------------------------+ */
 
 #include <bits/stdc++.h>
 #include <cstdio>
@@ -9,8 +15,8 @@ ILOSTLBEGIN //MACRO - "using namespace" for ILOCPEX
 //CPLEX Parameters
 #define CPLEX_TIME_LIM 3600 //3600 segundos
 
-int n_linha; //Quantidade de vertices
-int n_colun;
+int n_linha; //Numero de linhas
+int n_colun; // Numero de colunas
 
 vector<vector<int>> Grafo;
 
@@ -48,7 +54,6 @@ void cplex(){ //CPLEX
 			if(i==j || Grafo[i][j] == 0){
 				continue;
 			}
-			//printf("custo[%c][%c] = %d\n", 65+i, 65+j, Grafo[i][j]);
 			sum += Grafo[i][j]*x[i][j];	
 		}
 	}
@@ -56,6 +61,7 @@ void cplex(){ //CPLEX
 	
 	//RESTRICOES ---------------------------------------------	
 	
+	//R1 Segunda retrição baseada no PFCM
 	for(int i = 0; i < n_linha; i++){
 		printf("\ni:%d\n",i);
 		sum.clear();
@@ -66,10 +72,6 @@ void cplex(){ //CPLEX
 				printf("+[%d][%d] ", i,j);
 				sum += x[i][j];
 			}
-			// if(Grafo[j][i]!=0){
-			// 	printf("-[%d][%d] ", j,i);
-			// 	sum-= x[j][i];
-			// }
 		}
 
 		sum2.clear();
@@ -83,10 +85,13 @@ void cplex(){ //CPLEX
 
 		if(i==0){
 			model.add(sum - sum2 == 1);
+			numberRes++;
 		}else if(i == n_linha-1){
 			model.add(sum - sum2 == -1);
+			numberRes++;
 		}else{
 			model.add(sum - sum2 == 0);
+			numberRes++;
 		}
 	}
 
@@ -189,13 +194,12 @@ void cplex(){ //CPLEX
 int main(){
 
 	cin >> n_linha >> n_colun;
-	Grafo.resize(n_linha); //Resize matrix
+	Grafo.resize(n_linha); //Resize matriz
 	
 	for(int i = 0; i < n_linha; i++){
 		Grafo[i].assign(n_colun,0);
 		for(int j = 0; j < n_colun; j++){
 			cin >> Grafo[i][j];
-			//printf("custo[%c][%c] = %d\n", 65+i, 65+j, Grafo[i][j]);
 		}
 
 	}
