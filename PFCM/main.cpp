@@ -64,7 +64,6 @@ void cplex(){ //CPLEX
 			if(custo[i][j].custo == 0){
 				continue;
 			}
-			//printf("custo[%d][%d] = %d\n", i, j, custo[i][j].custo);
 			sum += custo[i][j].custo * x[i][j];	
 		}
 	}
@@ -103,13 +102,9 @@ void cplex(){ //CPLEX
 	
 		if(vertices[i].tipo == 'd'){
 		
-			// printf("v tipo %c, v cap %d\n", vertices[i].tipo, vertices[i].cap);
 			sum.clear();
-			printf("%d\n",i);
-			
 			for(int j = 0; j < n_vertices; j++){
 				if(custo[i][j].custo != 0){
-					printf("+x[%d][%d] %d\n",i,j, custo[i][j].custo );
 					sum += x[i][j];	
 				}
 			}
@@ -117,11 +112,10 @@ void cplex(){ //CPLEX
 			sum2.clear();
 			for(int k = 0; k < n_vertices; k++){
 				if (custo[k][i].custo !=0 ){ 
-					printf("-x[%d][%d] %d\n",k,i, custo[k][i].custo );
-
 					sum2 += x[k][i];
 				}
 			}
+
 			model.add((sum - sum2) <= -vertices[i].cap); 
 			numberRes++;
 		}
@@ -132,21 +126,19 @@ void cplex(){ //CPLEX
 		if(vertices[i].tipo == 't'){
 
 			sum.clear();
-
 			for(int j = 0; j < n_vertices; j++){
 				if(custo[i][j].custo != 0){
 					sum += x[i][j];
 				}
-
 			}
 
 			sum2.clear();
 			for(int k = 0; k < n_vertices; k++){
 				if(custo[k][i].custo !=0 ){
-					//printf("-x[%c][%c] = %d\n",64+i, 65+k,Grafo[k][i]);
 					sum2 += x[k][i];
 				}
 			}
+
 			model.add((sum - sum2) == 0); 
 			numberRes++;
 		}
@@ -156,7 +148,6 @@ void cplex(){ //CPLEX
 	for(int i = 0; i < n_vertices; i++){
 		for(int j = 0; j < n_vertices; j++){
 			if(custo[i][j].fluxo != 0){
-				// printf("custo[%d][%d] = %d\n", i, j, custo[i][j].fluxo);
 				model.add(x[i][j] <= custo[i][j].fluxo);
 				numberRes++;
 			}
@@ -268,16 +259,10 @@ int main(){
 	
 	for (int i = 0; i < n_vertices; ++i) {
 		cin >> vertices[i].tipo >> vertices[i].cap; 		
-		// if(vertices[i].cap == 0){
-		// 	vertices[i].cap = inf;
-		// }
 	}
 
 	for(int i = 0; i < n_arestas; i++){
 		cin >> arestas[i].origem >> arestas[i].destino >> arestas[i].custo >> arestas[i].fluxo;
-		// if(arestas[i].fluxo == 0){
-		// 	arestas[i].fluxo = inf;
-		// }
 	}
 
 	custo.resize(n_vertices);
@@ -286,22 +271,12 @@ int main(){
 		custo[i].resize(n_vertices);
 	}
 	
-	// for(int i = 0; i < n_vertices; i++){ // For que representa o (Para Todo).
-	// 	for(int j = 0; j < n_vertices; j++) {		
-	// 		printf("[%d][%d] custo: %d, FluxoMax: %d\n", i,j,custo[i][j].custo, custo[i][j].fluxo);
-	// 	}
-	// }
-
-	 // Preencher a matriz de custos e fluxos com base nas arestas lidas
+	// Preencher a matriz de custos e fluxos com base nas arestas lidas
     
 	for (int i = 0; i < n_arestas; i++) {
         int origem = arestas[i].origem;
-		//printf("origem: %d ", origem);
-		
         int destino = arestas[i].destino;
-		//printf("destino: %d\n", destino);
-
-		//printf("curto: %d - fluxo %d \n",arestas[i].custo, arestas[i].fluxo);
+	
         custo[origem][destino].custo = arestas[i].custo;
         custo[origem][destino].fluxo = arestas[i].fluxo;
 	
@@ -313,12 +288,7 @@ int main(){
 	// 		printf("[%d][%d] custo: %d, FluxoMax: %d\n", i,j,custo[i][j].custo, custo[i][j].fluxo);
 	// 	}
 	// }
-	// for (int i = 0; i < n_arestas; i++){         
-	// 		cout << "Arestas: " << i << " :" << " Origem: " << arestas[i].origem << " Destino: " << arestas[i].destino << " Custo: " << arestas[i].custo << " FluxoMax: " << arestas[i].fluxo << '\n';            
-    // }
-	for(int i = 0; i < n_vertices; i++){
-		printf("tipo %c, capacidade %d\n", vertices[i].tipo, vertices[i].cap);
-	}
+	
 	cplex();
 
     return 0;
