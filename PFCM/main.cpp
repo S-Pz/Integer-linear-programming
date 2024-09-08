@@ -1,4 +1,11 @@
 
+/*---------------- File: main.cpp  ---------------------+
+|Problema de Fluxo de Custo Mínimo (PFCM)               |
+|					      		                        |
+|					      		                        |
+| Implementado por: Pedro Garcia, Sávio Francisco       |
++-------------------------------------------------------+ */
+
 #include <bits/stdc++.h>
 #include <cstdio>
 #include <ilcplex/ilocplex.h>
@@ -9,26 +16,25 @@ ILOSTLBEGIN //MACRO - "using namespace" for ILOCPEX
 
 //CPLEX Parameters
 #define CPLEX_TIME_LIM 3600 //3600 segundos
-int inf = std::numeric_limits<int>::max();
 
-struct grafo{
+struct grafo{ // Estrutura do grafo
 	int origem;
 	int destino;
 	int custo;
 	int fluxo;
 };
 
-struct Vertice{
+struct Vertice{ //Estrutura do vertice
 	int cap;
 	char tipo;
 };
 
-int n_arestas; //Quantidade de vertices
-int n_vertices;
+int n_arestas; //Número de Arestas
+int n_vertices; // Número de vértices
 
-vector<Vertice>vertices;
-vector<grafo>arestas;
-vector<vector<grafo>>custo;
+vector<Vertice>vertices; // Vetor de vertices
+vector<grafo>arestas; // Vetor de arestas do tipo do grafo
+vector<vector<grafo>>custo; // Matriz de custos
 
 void cplex(){ //CPLEX
     
@@ -71,7 +77,7 @@ void cplex(){ //CPLEX
 	
 	//RESTRICOES ---------------------------------------------	
 	
-	//R3 Conservação de fluxo intermediários
+	//R1 - oferta dos nós de origem
 	for(int i = 0; i < n_vertices; i++){
 		
 		if(vertices[i].tipo == 'o'){
@@ -97,7 +103,7 @@ void cplex(){ //CPLEX
 		}
 	}
 
-	//R4 Capacidade Máxima
+	//R2 - demanda dos nós de destino
 	for(int i = 0; i < n_vertices; i++){
 	
 		if(vertices[i].tipo == 'd'){
@@ -121,6 +127,7 @@ void cplex(){ //CPLEX
 		}
 	}
 
+	//R3 nós intermediários
 	for(int i = 0; i < n_vertices; i++){
 		
 		if(vertices[i].tipo == 't'){
@@ -144,7 +151,7 @@ void cplex(){ //CPLEX
 		}
 	}
 
-	//R5
+	//R4 Fluxo máximo
 	for(int i = 0; i < n_vertices; i++){
 		for(int j = 0; j < n_vertices; j++){
 			if(custo[i][j].fluxo != 0){

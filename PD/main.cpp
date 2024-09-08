@@ -1,4 +1,11 @@
 
+/*---------------- File: main.cpp  ---------------------+
+|Problema da Designaçã (PD)                             |
+|					      		                        |
+|					      		                        |
+| Implementado por: Pedro Garcia, Sávio Francisco       |
++-------------------------------------------------------+ */
+
 #include <bits/stdc++.h>
 #include <cstdio>
 #include <ilcplex/ilocplex.h>
@@ -165,7 +172,6 @@ void cplex(){ //CPLEX
 	cplex.end();
 	sum.end();
 	
-
 	cout << "Memory usage before end:  " << env.getMemoryUsage() / (1024. * 1024.) << " MB" << endl;
 	env.end();
 }
@@ -179,41 +185,17 @@ int main(){
 	
 	Custo.resize(n_pessoas); //Resize matrix
 	
-	// for(int i=0; i<n_pessoas; i++){
-	// 	cin >> Pessoas[i];
-	// }
-	
-	// for(int i=0; i<n_tarefas; i++){
-	// 	cin >> Tarefas[i];
-	// }
-
-	// for(int i=0; i<n_pessoas; i++){
-	// 	printf("Pessoas %d\n", Pessoas[i]);
-	// }
-	// for(int i=0; i<n_tarefas; i++){
-	// 	printf("Tarefas %d\n", Tarefas[i]);
-	// }
-
 	for(int i = 0; i < n_pessoas; i++){
 		Custo[i].resize(n_tarefas);
 		for(int j = 0; j < n_tarefas; j++){
 			cin >> Custo[i][j];
 		}
-
 	}
 
 	printf("Verificacao da leitura dos dados:\n");
 	printf("Quantidade de Pessoas: %d\n", n_pessoas);
 	printf("Quantidade de Tarefas: %d\n", n_tarefas);
 	
-	printf("Custos:\n");
-	
-	// for(int i = 0; i < n_pessoas; i++){
-	// 	for(int j = 0; j < n_tarefas; j++){
-	// 		printf("custo[%d][%d] = %d\n", i, j, Custo[i][j]);
-	// 	}
-	// }
-
 	cplex();
 
     return 0;
